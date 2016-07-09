@@ -625,8 +625,10 @@ module.exports = {
         delete queryOpts.format;
         if(typeof input === "string" || input instanceof String) {          
           queryOpts.text = input;
-          queryOpts['focus.point.lat'] = inputOpts.lat;
-          queryOpts['focus.point.lon'] = inputOpts.lng;
+          if(typeof inputOpts.lat !== "undefined" && typeof inputOpts.lng !== "undefined"){
+            queryOpts['focus.point.lat'] = inputOpts.lat;
+            queryOpts['focus.point.lon'] = inputOpts.lng;
+          }
         } else if(typeof input === "array" || input instanceof Array) {
           queryOpts['point.lat'] = input[0];
           queryOpts['point.lon'] = input[1];
@@ -646,7 +648,9 @@ module.exports = {
         delete queryOpts.format;
         if(typeof input === "string" || input instanceof String) {
           queryOpts.searchtext = input;
-          queryOpts.mapview = inputOpts.lat.trim() + ',' + inputOpts.lng.trim() + ';' + inputOpts.lat.trim() + ',' + inputOpts.lng.trim();
+          if(typeof inputOpts.lat !== "undefined" && typeof inputOpts.lng !== "undefined"){
+            queryOpts.mapview = inputOpts.lat.trim() + ',' + inputOpts.lng.trim() + ';' + inputOpts.lat.trim() + ',' + inputOpts.lng.trim();
+          }        
         } else if(typeof input === "array" || input instanceof Array) {
           queryOpts.prox = input.join(',');
           queryOpts.mode = 'retrieveAddresses';

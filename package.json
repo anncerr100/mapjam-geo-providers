@@ -1,6 +1,6 @@
 {
   "name": "mapjam-geo-providers",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Supports Esri/Arcgis, Google, Mapzen, Nokia/HERE Geocode and Reverse Geocode",
   "main": "providers.js",
   "dependencies": {
