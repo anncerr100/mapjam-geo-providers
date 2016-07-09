@@ -461,6 +461,15 @@ module.exports = {
           });
         }
         break;
+      case 'arcgis-suggest':
+      case 'esri-suggest':
+        if(response.suggestions.length>0) {
+          replyObj.address.pretty = response.suggestions[0].text;
+          replyObj.address.address = response.suggestions[0].text;
+        } else {
+          return new Error('No results found');
+        }
+        break;
       case 'mapzen':
         var lat = response.features[0].geometry.coordinates[1];
         var lng = response.features[0].geometry.coordinates[0];
@@ -505,7 +514,7 @@ module.exports = {
           pretty: xmlDoc.get('//Label').text(),
           address: xmlDoc.get('//Label').text(),
           city: xmlDoc.get('//Address//City').text(),
-          region: xmlDoc.get('//Address/District').text(),
+          //region: xmlDoc.get('//Address/District').text(),
           postal: xmlDoc.get('//Address/PostalCode').text()
         };
 
@@ -590,14 +599,34 @@ module.exports = {
         queryOpts.f = queryOpts.format;
         delete queryOpts.format;
         break;
+      case 'esri-suggest':
+      case 'arcgis-suggest':
+        requestOpts.urlBuilder.host = "geocode.arcgis.com:443";
+        requestOpts.urlBuilder.pathname = "/arcgis/rest/services/World/GeocodeServer/";
+        if(typeof input === "string" || input instanceof String) {
+          requestOpts.urlBuilder.pathname += "suggest";
+          queryOpts.text = input;
+          queryOpts.location = inputOpts.lng + ', ' + inputOpts.lat;
+        } else if(typeof input === "array" || input instanceof Array) {
+          requestOpts.urlBuilder.pathname += "reverseGeocode/";
+          queryOpts.location = input.reverse().join(',');
+        } else {
+          var err = new Error();
+          err.message = 'You didn\t provide a valid input. Valid inputs are string or array';
+          callback(err);
+        }
+        queryOpts.f = queryOpts.format;
+        delete queryOpts.format;
+        break;
       case 'mapzen':
         requestOpts.urlBuilder.host = "search.mapzen.com:443";
-        requestOpts.urlBuilder.pathname = "/v1/search";
+        requestOpts.urlBuilder.pathname = "/v1/autocomplete";
         queryOpts.api_key = inputOpts.api_key;
-
         delete queryOpts.format;
         if(typeof input === "string" || input instanceof String) {          
           queryOpts.text = input;
+          queryOpts['focus.point.lat'] = inputOpts.lat;
+          queryOpts['focus.point.lon'] = inputOpts.lng;
         } else if(typeof input === "array" || input instanceof Array) {
           queryOpts['point.lat'] = input[0];
           queryOpts['point.lon'] = input[1];
@@ -617,7 +646,7 @@ module.exports = {
         delete queryOpts.format;
         if(typeof input === "string" || input instanceof String) {
           queryOpts.searchtext = input;
-
+          queryOpts.mapview = inputOpts.lat.trim() + ',' + inputOpts.lng.trim() + ';' + inputOpts.lat.trim() + ',' + inputOpts.lng.trim();
         } else if(typeof input === "array" || input instanceof Array) {
           queryOpts.prox = input.join(',');
           queryOpts.mode = 'retrieveAddresses';
